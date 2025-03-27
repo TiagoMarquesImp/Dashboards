@@ -138,75 +138,75 @@ try:
                 else:
                     st.dataframe(summary_df, use_container_width=True, height=400)
             
-            with col2:
-                # Calculate metrics for charts
-                total_stars = filtered_df['stars'].sum()
-                total_users = len(all_users)
-                active_receivers = len(filtered_df['receiver'].unique())
-                participation_rate = (active_receivers / total_users) * 100 if total_users > 0 else 0
+            # with col2:
+            #     # Calculate metrics for charts
+            #     total_stars = filtered_df['stars'].sum()
+            #     total_users = len(all_users)
+            #     active_receivers = len(filtered_df['receiver'].unique())
+            #     participation_rate = (active_receivers / total_users) * 100 if total_users > 0 else 0
                 
-                # Chart 1: Stars distribution
-                st.subheader("Distribuição de Estrelas Enviadas")
-                stars_by_user = filtered_df.groupby('receiver')['stars'].sum().reset_index()
-                stars_by_user = stars_by_user.sort_values('stars', ascending=False)
+            #     # Chart 1: Stars distribution
+            #     st.subheader("Distribuição de Estrelas Enviadas")
+            #     stars_by_user = filtered_df.groupby('receiver')['stars'].sum().reset_index()
+            #     stars_by_user = stars_by_user.sort_values('stars', ascending=False)
                 
-                fig1 = px.pie(
-                    stars_by_user, 
-                    values='stars', 
-                    names='receiver',
-                    title=f'Total de Estrelas: {int(total_stars)}',
-                    hole=0.4
-                )
-                st.plotly_chart(fig1, use_container_width=True)
+            #     fig1 = px.pie(
+            #         stars_by_user, 
+            #         values='stars', 
+            #         names='receiver',
+            #         title=f'Total de Estrelas: {int(total_stars)}',
+            #         hole=0.4
+            #     )
+            #     st.plotly_chart(fig1, use_container_width=True)
                 
-                # Chart 2: Participation rate
-                st.subheader("Taxa de Participação")
-                participation_data = pd.DataFrame([
-                    {'Status': 'Enviaram Estrelas', 'Contagem': active_receivers},
-                    {'Status': 'Não Enviaram Estrelas', 'Contagem': total_users - active_receivers}
-                ])
+            #     # Chart 2: Participation rate
+            #     st.subheader("Taxa de Participação")
+            #     participation_data = pd.DataFrame([
+            #         {'Status': 'Enviaram Estrelas', 'Contagem': active_receivers},
+            #         {'Status': 'Não Enviaram Estrelas', 'Contagem': total_users - active_receivers}
+            #     ])
                 
-                fig2 = px.pie(
-                    participation_data,
-                    values='Contagem',
-                    names='Status',
-                    title=f'Taxa de Participação: {participation_rate:.1f}%',
-                    hole=0.4,
-                    color_discrete_sequence=['#1f77b4', '#d3d3d3']
-                )
-                st.plotly_chart(fig2, use_container_width=True)
+            #     fig2 = px.pie(
+            #         participation_data,
+            #         values='Contagem',
+            #         names='Status',
+            #         title=f'Taxa de Participação: {participation_rate:.1f}%',
+            #         hole=0.4,
+            #         color_discrete_sequence=['#1f77b4', '#d3d3d3']
+            #     )
+            #     st.plotly_chart(fig2, use_container_width=True)
                 
-            # Additional insights
-            st.subheader("Insights")
-            col1, col2, col3 = st.columns(3)
+            # # Additional insights
+            # st.subheader("Insights")
+            # col1, col2, col3 = st.columns(3)
             
-            with col1:
-                top_receiver = stars_by_user.iloc[0] if not stars_by_user.empty else None
-                if top_receiver is not None:
-                    st.metric("Maior Doador de Estrelas", 
-                             f"{top_receiver['receiver']}", 
-                             f"{int(top_receiver['stars'])} ⭐")
+            # with col1:
+            #     top_receiver = stars_by_user.iloc[0] if not stars_by_user.empty else None
+            #     if top_receiver is not None:
+            #         st.metric("Maior Doador de Estrelas", 
+            #                  f"{top_receiver['receiver']}", 
+            #                  f"{int(top_receiver['stars'])} ⭐")
             
-            with col2:
-                top_sender = summary_df.sort_values('Estrelas Recebidas', ascending=False).iloc[0] if not summary_df.empty else None
-                if top_sender is not None:
-                    st.metric("Maior Receptor de Estrelas", 
-                             f"{top_sender['Pessoa']}", 
-                             f"{int(top_sender['Estrelas Recebidas'])} ⭐")
+            # with col2:
+            #     top_sender = summary_df.sort_values('Estrelas Recebidas', ascending=False).iloc[0] if not summary_df.empty else None
+            #     if top_sender is not None:
+            #         st.metric("Maior Receptor de Estrelas", 
+            #                  f"{top_sender['Pessoa']}", 
+            #                  f"{int(top_sender['Estrelas Recebidas'])} ⭐")
             
-            with col3:
-                if slack_name:
-                    user_row = summary_df[summary_df['Pessoa'] == slack_name]
-                    if not user_row.empty:
-                        user_sent = user_row['Estrelas Enviadas'].values[0]
-                        user_receiverd = user_row['Estrelas Recebidas'].values[0]
-                        st.metric("Suas Estrelas", 
-                                 f"Enviadas: {user_sent} | Recebidas: {user_receiverd}", 
-                                 f"Saldo: {user_receiverd - user_sent}")
-                    else:
-                        st.info(f"Não encontramos dados para {slack_name}")
-                else:
-                    st.info("Insira seu nome no Slack para ver suas estatísticas")
+            # with col3:
+            #     if slack_name:
+            #         user_row = summary_df[summary_df['Pessoa'] == slack_name]
+            #         if not user_row.empty:
+            #             user_sent = user_row['Estrelas Enviadas'].values[0]
+            #             user_receiverd = user_row['Estrelas Recebidas'].values[0]
+            #             st.metric("Suas Estrelas", 
+            #                      f"Enviadas: {user_sent} | Recebidas: {user_receiverd}", 
+            #                      f"Saldo: {user_receiverd - user_sent}")
+            #         else:
+            #             st.info(f"Não encontramos dados para {slack_name}")
+            #     else:
+            #         st.info("Insira seu nome no Slack para ver suas estatísticas")
 except Exception as e:
     st.error(f"Ocorreu um erro ao processar os dados: {e}")
     st.info("Verifique se a URL da planilha está correta e se você compartilhou a planilha com a conta de serviço.")
