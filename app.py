@@ -24,13 +24,15 @@ def connect_to_sheets():
         credentials_dict = st.secrets["gcp_service_account"]
         credentials = ServiceAccountCredentials.from_json_keyfile_dict(credentials_dict, scope)
     else:
-        # Fallback to local file for development
-        credentials = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
+        try:
+            # Fallback to local file for development
+            credentials = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
+        except FileNotFoundError:
+            st.error("credentials.json file not found. Please add your Google service account credentials to Streamlit secrets.")
+            st.stop()
     
     client = gspread.authorize(credentials)
     return client
-
-# ... existing code ...
 
 # Function to get data from Google Sheets
 @st.cache_data(ttl=300)
@@ -63,7 +65,7 @@ with st.sidebar:
     sheet_url = st.text_input("URL da planilha do Google Sheets", 
                              "https://docs.google.com/spreadsheets/d/1s75mY_hLlcsv0EVvyKFb7-DbXqPOdyw0mzcQ8L06f8Y/edit")
     
-    email = st.text_input("Email Impulso", placeholder="service@impulso.team")
+    slack_name = st.text_input("Nome no Slack", placeholder="seu_nome_no_slack")
     
     # Get current year and month
     current_year = datetime.now().year
@@ -113,16 +115,28 @@ try:
             summary_df = pd.DataFrame(summary_data)
             summary_df = summary_df.sort_values('Pessoa')
             
-            # Highlight user's row if email is provided
-            if email:
-                user_name = email.split('@')[0]
+            # Highlight user's row if slack_name is provided
+            if slack_name:
+                user_name = slack_name
                 
             # Display main metrics
             col1, col2 = st.columns([3, 2])
             
             with col1:
                 st.subheader("Resumo de Estrelas")
-                st.dataframe(summary_df, use_container_width=True, height=400)
+                
+                # Highlight user's row if slack_name is provided
+                if slack_name:
+                    st.dataframe(
+                        summary_df.style.apply(
+                            lambda x: ['background-color: rgba(255, 215, 0, 0.2)' if x.name == user_name else '' for _ in x],
+                            axis=1
+                        ),
+                        use_container_width=True, 
+                        height=400
+                    )
+                else:
+                    st.dataframe(summary_df, use_container_width=True, height=400)
             
             with col2:
                 # Calculate metrics for charts
@@ -181,8 +195,8 @@ try:
                              f"{int(top_sender['Estrelas Recebidas'])} ⭐")
             
             with col3:
-                if email:
-                    user_row = summary_df[summary_df['Pessoa'].str.contains(user_name, case=False)]
+                if slack_name:
+                    user_row = summary_df[summary_df['Pessoa'] == slack_name]
                     if not user_row.empty:
                         user_sent = user_row['Estrelas Enviadas'].values[0]
                         user_receiverd = user_row['Estrelas Recebidas'].values[0]
@@ -190,10 +204,9 @@ try:
                                  f"Enviadas: {user_sent} | Recebidas: {user_receiverd}", 
                                  f"Saldo: {user_receiverd - user_sent}")
                     else:
-                        st.info(f"Não encontramos dados para {email}")
+                        st.info(f"Não encontramos dados para {slack_name}")
                 else:
-                    st.info("Insira seu email para ver suas estatísticas")
-
+                    st.info("Insira seu nome no Slack para ver suas estatísticas")
 except Exception as e:
     st.error(f"Ocorreu um erro ao processar os dados: {e}")
     st.info("Verifique se a URL da planilha está correta e se você compartilhou a planilha com a conta de serviço.")
