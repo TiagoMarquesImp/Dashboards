@@ -18,9 +18,19 @@ st.set_page_config(
 @st.cache_resource
 def connect_to_sheets():
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    credentials = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
+    
+    # Use Streamlit secrets for deployment
+    if 'gcp_service_account' in st.secrets:
+        credentials_dict = st.secrets["gcp_service_account"]
+        credentials = ServiceAccountCredentials.from_json_keyfile_dict(credentials_dict, scope)
+    else:
+        # Fallback to local file for development
+        credentials = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
+    
     client = gspread.authorize(credentials)
     return client
+
+# ... existing code ...
 
 # Function to get data from Google Sheets
 @st.cache_data(ttl=300)
