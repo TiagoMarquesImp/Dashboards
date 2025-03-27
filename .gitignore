@@ -1,0 +1,16 @@
+# Arquivos de credenciais
+credentials.json
+.streamlit/secrets.toml
+
+# Ambiente Python
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Outros
+.DS_Store
