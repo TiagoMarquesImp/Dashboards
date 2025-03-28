@@ -85,10 +85,6 @@ def get_slack_data(sheet_url):
 
 # Title and description
 st.title("#shine-little-star ⭐")
-st.markdown("Confira o envio de suas Estrelas do canal #shine-little-star.")
-
-# Title and description
-st.title("#shine-little-star ⭐")
 
 # Add last updated timestamp in the upper right
 col1, col2 = st.columns([6, 2])
@@ -97,10 +93,6 @@ with col1:
 with col2:
     current_time = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     st.markdown(f"<div style='text-align: right; color: gray; font-size: 0.8em;'>Última atualização:<br>{current_time}</div>", unsafe_allow_html=True)
-
-# Sidebar for inputs
-with st.sidebar:
-    # ... existing sidebar code ...
 
 # Sidebar for inputs
 with st.sidebar:
