@@ -157,13 +157,13 @@ try:
                 
                 # Get available stars from quotas
                 user_quota = quotas_df[quotas_df['user'] == user]
-                available_stars = user_quota['available_stars'].values[0] if not user_quota.empty else 50
+                available_stars = user_quota['available_stars'].values[0] if not user_quota.empty else 150
                 
                 summary_data.append({
                     'Pessoa': user,
                     'Estrelas Recebidas': int(stars_received) if not pd.isna(stars_received) else 0,
                     'Estrelas Enviadas': int(stars_sent) if not pd.isna(stars_sent) else 0,
-                    'Estrelas Disponíveis': int(available_stars) if not pd.isna(available_stars) else 50
+                    'Estrelas Disponíveis': int(available_stars) if not pd.isna(available_stars) else 150
                 })
             
             summary_df = pd.DataFrame(summary_data)
@@ -197,8 +197,8 @@ try:
                 # Calculate metrics for charts based on new data structure
                 total_stars_sent = filtered_df['stars'].sum()
                 
-                # Calculate total available stars across all users (50 stars per user)
-                total_possible_stars = total_users_count * 50
+                # Calculate total available stars across all users (150 stars per user)
+                total_possible_stars = total_users_count * 150
                 
                 # Chart 1: Participation Rate (Senders) - Changed to pie chart
                 st.subheader("Taxa de Participação")
