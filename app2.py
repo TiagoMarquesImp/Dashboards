@@ -97,8 +97,7 @@ with col2:
 # Sidebar for inputs
 with st.sidebar:
     st.header("Filtros")
-    sheet_url = st.text_input("URL da planilha do Google Sheets", 
-                             "https://docs.google.com/spreadsheets/d/1s75mY_hLlcsv0EVvyKFb7-DbXqPOdyw0mzcQ8L06f8Y/edit")
+    # Removed the sheet_url input field
     
     slack_name = st.text_input("Nome no Slack", placeholder="seu_nome_no_slack")
     
@@ -114,11 +113,11 @@ with st.sidebar:
     years = list(range(2020, current_year + 1))
     selected_year = st.selectbox("Ano", options=years, index=len(years)-1)
     
+    # Define the sheet_url as a fixed value instead of user input
+    sheet_url = "https://docs.google.com/spreadsheets/d/1s75mY_hLlcsv0EVvyKFb7-DbXqPOdyw0mzcQ8L06f8Y/edit"
+    
     if st.button("Buscar"):
-        if not sheet_url or "your-sheet-id" in sheet_url:
-            st.error("Por favor, insira uma URL válida da planilha.")
-        else:
-            st.success("Dados carregados com sucesso!")
+        st.success("Dados carregados com sucesso!")
 
 # Main content
 try:
@@ -180,7 +179,7 @@ try:
             with col1:
                 st.subheader("Resumo de Estrelas")
                 
-                # Highlight user's row if slack_name is provided
+                # Highlight user's row if slack_name is provided and hide index column
                 if slack_name:
                     st.dataframe(
                         summary_df.style.apply(
@@ -188,10 +187,11 @@ try:
                             axis=1
                         ),
                         use_container_width=True, 
-                        height=400
+                        height=400,
+                        hide_index=True  # Hide the index column
                     )
                 else:
-                    st.dataframe(summary_df, use_container_width=True, height=400)
+                    st.dataframe(summary_df, use_container_width=True, height=400, hide_index=True)  # Hide the index column
             
             with col2:
                 # Calculate metrics for charts based on new data structure
@@ -200,60 +200,46 @@ try:
                 # Calculate total available stars across all users (50 stars per user)
                 total_possible_stars = total_users_count * 50
                 
-                # Chart 1: Participation Rate (Senders)
+                # Chart 1: Participation Rate (Senders) - Changed to pie chart
                 st.subheader("Taxa de Participação")
                 participation_rate = (active_senders_count / total_users_count) * 100 if total_users_count > 0 else 0
                 
-                fig1 = go.Figure(go.Indicator(
-                    mode="gauge+number",
-                    value=participation_rate,
-                    title={'text': "Pessoas que enviaram estrelas (%)"},
-                    domain={'x': [0, 1], 'y': [0, 1]},
-                    gauge={
-                        'axis': {'range': [0, 100]},
-                        'bar': {'color': "#1f77b4"},
-                        'steps': [
-                            {'range': [0, 33], 'color': "lightgray"},
-                            {'range': [33, 66], 'color': "gray"},
-                            {'range': [66, 100], 'color': "darkgray"}
-                        ],
-                        'threshold': {
-                            'line': {'color': "red", 'width': 4},
-                            'thickness': 0.75,
-                            'value': 100
-                        }
-                    }
-                ))
+                # Create pie chart for participation
+                participation_data = pd.DataFrame([
+                    {'Status': 'Enviaram Estrelas', 'Contagem': active_senders_count},
+                    {'Status': 'Não Enviaram Estrelas', 'Contagem': total_users_count - active_senders_count}
+                ])
                 
-                fig1.update_layout(height=250)
+                fig1 = px.pie(
+                    participation_data,
+                    values='Contagem',
+                    names='Status',
+                    title=f'Taxa de Participação: {participation_rate:.1f}%',
+                    hole=0.4,
+                    color_discrete_sequence=['#1f77b4', '#d3d3d3']
+                )
+                
                 st.plotly_chart(fig1, use_container_width=True)
                 
-                # Chart 2: Stars Usage Rate
+                # Chart 2: Stars Usage Rate - Changed to pie chart
                 st.subheader("Utilização de Estrelas")
                 stars_usage_rate = (total_stars_sent / total_possible_stars) * 100 if total_possible_stars > 0 else 0
                 
-                fig2 = go.Figure(go.Indicator(
-                    mode="gauge+number",
-                    value=stars_usage_rate,
-                    title={'text': "Estrelas utilizadas (%)"},
-                    domain={'x': [0, 1], 'y': [0, 1]},
-                    gauge={
-                        'axis': {'range': [0, 100]},
-                        'bar': {'color': "#ff7f0e"},
-                        'steps': [
-                            {'range': [0, 33], 'color': "lightgray"},
-                            {'range': [33, 66], 'color': "gray"},
-                            {'range': [66, 100], 'color': "darkgray"}
-                        ],
-                        'threshold': {
-                            'line': {'color': "red", 'width': 4},
-                            'thickness': 0.75,
-                            'value': 100
-                        }
-                    }
-                ))
+                # Create pie chart for stars usage
+                stars_usage_data = pd.DataFrame([
+                    {'Status': 'Estrelas Utilizadas', 'Contagem': int(total_stars_sent)},
+                    {'Status': 'Estrelas Não Utilizadas', 'Contagem': int(total_possible_stars - total_stars_sent)}
+                ])
                 
-                fig2.update_layout(height=250)
+                fig2 = px.pie(
+                    stars_usage_data,
+                    values='Contagem',
+                    names='Status',
+                    title=f'Utilização de Estrelas: {stars_usage_rate:.1f}%',
+                    hole=0.4,
+                    color_discrete_sequence=['#ff7f0e', '#d3d3d3']
+                )
+                
                 st.plotly_chart(fig2, use_container_width=True)
                 
             
